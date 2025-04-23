@@ -36,7 +36,7 @@ _This repo contains the source code for my personal website, runvia.dev—a Reac
 
 ## Demo
 
-_runvia.dev(https://runvia.dev)_
+Live: https://runvia.dev  
 
 ![Home page screenshot](./assets/screenshots.png)
 
