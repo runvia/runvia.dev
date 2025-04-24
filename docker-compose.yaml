@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  traefik:
+    image: traefik:v2.8
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  frontend:
+    build: ./frontend
+    labels:
+      - "traefik.http.routers.frontend.rule=Host(`runvia.dev`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+
+  backend:
+    build: ./backend
+    labels:
+      - "traefik.http.routers.backend.rule=Host(`api.runvia.dev`)"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
