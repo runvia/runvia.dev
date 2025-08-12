@@ -1,4 +1,4 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.4 Chrome/138.0.7204.97 Electron/37.2.1 Safari/537.36" version="28.0.4" pages="5">
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.4 Chrome/138.0.7204.97 Electron/37.2.1 Safari/537.36" version="28.0.4" pages="6">
   <diagram name="01 - Stakeholders" id="YU1AUlcPMeFfIlHjlYDG">
     <mxGraphModel dx="1948" dy="815" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
@@ -463,6 +463,53 @@
             <mxPoint x="880" y="400" as="sourcePoint" />
             <mxPoint x="1040" y="400" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="ED_U0ns_QoX4F7vDYlIB" name="06 - Migration Planning">
+    <mxGraphModel dx="2687" dy="1182" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-9" value="" style="swimlane;startSize=0;" vertex="1" parent="1">
+          <mxGeometry x="420" y="289" width="280" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-10" value="Phase 2" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1dIMQGoPIG-B5MOEzxev-9">
+          <mxGeometry y="10" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-3" value="WP3 - Contact Integration" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFE0E0;shape=mxgraph.archimate3.application;appType=workPackage;archiType=rounded;" vertex="1" parent="1dIMQGoPIG-B5MOEzxev-9">
+          <mxGeometry x="70" y="40" width="150" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-4" value="WP4 - Traefik Setup" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFE0E0;shape=mxgraph.archimate3.application;appType=workPackage;archiType=rounded;" vertex="1" parent="1dIMQGoPIG-B5MOEzxev-9">
+          <mxGeometry x="70" y="160" width="150" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-11" value="" style="swimlane;startSize=0;" vertex="1" parent="1">
+          <mxGeometry x="750" y="289" width="280" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-12" value="Phase 3" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1dIMQGoPIG-B5MOEzxev-11">
+          <mxGeometry y="10" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-6" value="WP6 - Github Actions" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFE0E0;shape=mxgraph.archimate3.application;appType=workPackage;archiType=rounded;" vertex="1" parent="1dIMQGoPIG-B5MOEzxev-11">
+          <mxGeometry x="65" y="160" width="150" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-5" value="WP5 - Docker Setup" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFE0E0;shape=mxgraph.archimate3.application;appType=workPackage;archiType=rounded;" vertex="1" parent="1dIMQGoPIG-B5MOEzxev-11">
+          <mxGeometry x="65" y="41" width="150" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-13" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="90" y="289" width="280" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-1" value="WP1 - Static Frontend" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFE0E0;shape=mxgraph.archimate3.application;appType=workPackage;archiType=rounded;" vertex="1" parent="1dIMQGoPIG-B5MOEzxev-13">
+          <mxGeometry x="65" y="40" width="150" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-2" value="WP2 - API Backend" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFE0E0;shape=mxgraph.archimate3.application;appType=workPackage;archiType=rounded;" vertex="1" parent="1dIMQGoPIG-B5MOEzxev-13">
+          <mxGeometry x="65" y="150" width="150" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-7" value="" style="swimlane;startSize=0;" vertex="1" parent="1dIMQGoPIG-B5MOEzxev-13">
+          <mxGeometry width="280" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="1dIMQGoPIG-B5MOEzxev-8" value="Phase 1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1dIMQGoPIG-B5MOEzxev-7">
+          <mxGeometry y="10" width="70" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
