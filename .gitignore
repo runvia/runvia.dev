@@ -176,6 +176,8 @@ cython_debug/
 *.dtmp
 .$*
 
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
+
+# Local IDE + certs + root lockfile
+.vscode/
+letsencrypt/
+/package-lock.json
