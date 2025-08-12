@@ -1,23 +1,43 @@
-version: '3.8'
 services:
-  traefik:
-    image: traefik:v2.8
-    command:
-      - "--providers.docker=true"
-      - "--entrypoints.web.address=:80"
-    ports:
-      - "80:80"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-
   frontend:
     build: ./frontend
     labels:
       - "traefik.http.routers.frontend.rule=Host(`runvia.dev`)"
-      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      - "traefik.http.routers.frontend.entrypoints=web,websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=lets-encrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
   backend:
     build: ./backend
+    expose:
+      - "8000"
     labels:
-      - "traefik.http.routers.backend.rule=Host(`api.runvia.dev`)"
+      - "traefik.http.routers.backend.rule=Host(`runvia.dev`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web,websecure"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.certresolver=lets-encrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
+
+
+  traefik:
+    image: traefik:v2.8
+    restart: unless-stopped
+    env_file:
+      - .env
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Use DNS-01 via DigitalOcean:
+      - "--certificatesresolvers.lets-encrypt.acme.dnschallenge.provider=digitalocean"
+      - "--certificatesresolvers.lets-encrypt.acme.dnschallenge.delaybeforecheck=0"
+      - "--certificatesresolvers.lets-encrypt.acme.email=contact@runvia.dev"
+      - "--certificatesresolvers.lets-encrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /letsencrypt:/letsencrypt
+  

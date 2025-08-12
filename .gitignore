@@ -172,3 +172,12 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+*.dtmp
+.$*
+
+
+# Local IDE + certs + root lockfile
+.vscode/
+letsencrypt/
+/package-lock.json

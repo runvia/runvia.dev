@@ -141,6 +141,13 @@ Explain how to:
 ### [unreleased]
 - ✨ Add Blog page skeleton
 - 🐛 Fix header nav link styling
+### Added
+- Architecture model published across 5 pages:
+  Stakeholders, Capabilities, Use Case Diagram,
+  App & Data Architecture, Solutions Overview.
+
+### Removed
+- draw.io temp file: .$runvia-architecture.drawio.dtmp
 
 ### [v0.1.0] – 2025-04-23
 - Initial scaffold: React + FastAPI + Docker + Traefik
