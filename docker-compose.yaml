@@ -22,7 +22,7 @@ services:
       - prod
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=PathPrefix(`/`) && !PathPrefix(`/api`) && !PathPrefix(`/admin`)"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`) && !PathPrefix(`/api`)"
       - "traefik.http.routers.frontend.entrypoints=web,websecure"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.certresolver=lets-encrypt"
@@ -35,7 +35,7 @@ services:
       - dev
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend-dev.rule=PathPrefix(`/`) && !PathPrefix(`/api`) && !PathPrefix(`/admin`)"
+      - "traefik.http.routers.frontend-dev.rule=PathPrefix(`/`) && !PathPrefix(`/api`)"
       - "traefik.http.routers.frontend-dev.entrypoints=web"
       - "traefik.http.routers.frontend-dev.priority=1"
       - "traefik.http.services.frontend-dev.loadbalancer.server.port=80"
@@ -98,6 +98,8 @@ services:
       - "--entrypoints.web.address=:80"
       - "--api.insecure=true"
       - "--api.dashboard=true"
+      - "--accesslog=true"
+      - "--log.level=DEBUG"
     ports:
       - "80:80"
       - "8080:8080"
