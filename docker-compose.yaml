@@ -12,9 +12,8 @@ x-backend-base: &backend_base
     ADMIN_USERNAME: ${ADMIN_USERNAME}
     ADMIN_PASSWORD: ${ADMIN_PASSWORD}
   depends_on:
-      postgres:
-        condition: service_healthy
-
+    postgres:
+      condition: service_healthy
 
 services:
   frontend:
@@ -28,6 +27,7 @@ services:
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.certresolver=lets-encrypt"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.frontend-dev.priority=1"
 
   frontend-dev:
     <<: *frontend_base
@@ -40,11 +40,10 @@ services:
       - "traefik.http.routers.frontend-dev.priority=1"
       - "traefik.http.services.frontend-dev.loadbalancer.server.port=80"
 
-
   backend:
     <<: *backend_base
     profiles:
-      - prod    
+      - prod
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend-dev.rule=PathPrefix(`/api`)"
@@ -53,6 +52,7 @@ services:
       - "traefik.http.routers.backend.tls.certresolver=lets-encrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
       - "traefik.http.routers.backend-dev.service=backend-dev"
+      - "traefik.http.routers.backend-dev.priority=100"
 
   backend-dev:
     <<: *backend_base
@@ -65,11 +65,10 @@ services:
       - "traefik.http.routers.backend-dev.priority=100"
       - "traefik.http.services.backend-dev.loadbalancer.server.port=8000"
       - "traefik.http.routers.backend-dev.service=backend-dev"
-      
 
   traefik:
     image: traefik:v2.8
-    profiles: 
+    profiles:
       - prod
     restart: unless-stopped
     env_file:
@@ -105,7 +104,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
-  
   postgres:
     image: postgres:16
     profiles: ["dev", "prod"]
@@ -123,6 +121,5 @@ services:
       timeout: 3s
       retries: 10
 
-  
 volumes:
   pg_data:
