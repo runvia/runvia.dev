@@ -23,7 +23,7 @@ services:
       - prod
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`runvia.dev`)"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`) && !PathPrefix(`/api`) && !PathPrefix(`/admin`)"
       - "traefik.http.routers.frontend.entrypoints=web,websecure"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.certresolver=lets-encrypt"
@@ -47,11 +47,12 @@ services:
       - prod    
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`runvia.dev`) && PathPrefix(`/api`) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.backend-dev.rule=PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=web,websecure"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=lets-encrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      - "traefik.http.routers.backend-dev.service=backend-dev"
 
   backend-dev:
     <<: *backend_base
