@@ -15,8 +15,8 @@ export default function Layout({ children }: LayoutProps): JSX.Element {
                     <nav className="space-x-4">
                         <Link to="/" className="hover:text-blue-600">Home</Link>
                         <Link to="/cv" className="hover:text-blue-600">CV</Link>
-                        <Link to="/projects" className="hover:text-blue-600">Project</Link>
-                        <Link to="/login" className="hover:text-blue-600">Login</Link>
+                        {/* <Link to="/projects" className="hover:text-blue-600">Project</Link> */}
+                        {/* <Link to="/login" className="hover:text-blue-600">Login</Link> */}
                     </nav>
                 </div>
             </header>

@@ -25,10 +25,10 @@ from app.startup import ensure_default_admin, create_skills
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     ensure_default_admin()
-    create_skills()
+    # create_skills()
     yield
 
-app = FastAPI(title="Runvia.dev API", lifespan=lifespan)
+app = FastAPI(title="Runvia.dev API", lifespan=lifespan, root_path="/api")
 
 # 1) SessionMiddleware is required for SQLAdmin’s login sessions
 app.add_middleware(SessionMiddleware, secret_key="super-secret-cookie-key")
@@ -36,7 +36,7 @@ app.add_middleware(SessionMiddleware, secret_key="super-secret-cookie-key")
 # 2) CORS (for your React app on localhost:3000)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -113,7 +113,7 @@ admin.add_view(CVAdmin)
 admin.add_view(UserAdmin)
 
 # 4) Now group your JSON API under /api
-api_router = APIRouter(prefix="/api")
+api_router = APIRouter()
 
 # public endpoints
 api_router.include_router(health.router,    prefix="/health", tags=["health"])

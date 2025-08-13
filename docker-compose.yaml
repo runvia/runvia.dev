@@ -1,27 +1,75 @@
+x-frontend-base: &frontend_base
+  build: ./frontend
+  expose:
+    - "80"
+
+x-backend-base: &backend_base
+  build: ./backend
+  expose:
+    - "8000"
+  environment:
+    DATABASE_URL: ${DATABASE_URL}
+    ADMIN_USERNAME: ${ADMIN_USERNAME}
+    ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+  depends_on:
+      postgres:
+        condition: service_healthy
+
+
 services:
   frontend:
-    build: ./frontend
+    <<: *frontend_base
+    profiles:
+      - prod
     labels:
+      - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`runvia.dev`)"
       - "traefik.http.routers.frontend.entrypoints=web,websecure"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.certresolver=lets-encrypt"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
-  backend:
-    build: ./backend
-    expose:
-      - "8000"
+  frontend-dev:
+    <<: *frontend_base
+    profiles:
+      - dev
     labels:
-      - "traefik.http.routers.backend.rule=Host(`runvia.dev`) && PathPrefix(`/api`)"
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend-dev.rule=PathPrefix(`/`) && !PathPrefix(`/api`) && !PathPrefix(`/admin`)"
+      - "traefik.http.routers.frontend-dev.entrypoints=web"
+      - "traefik.http.routers.frontend-dev.priority=1"
+      - "traefik.http.services.frontend-dev.loadbalancer.server.port=80"
+
+
+  backend:
+    <<: *backend_base
+    profiles:
+      - prod    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`runvia.dev`) && PathPrefix(`/api`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.backend.entrypoints=web,websecure"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=lets-encrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
 
+  backend-dev:
+    <<: *backend_base
+    profiles:
+      - dev
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-dev.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-dev.entrypoints=web"
+      - "traefik.http.routers.backend-dev.priority=100"
+      - "traefik.http.services.backend-dev.loadbalancer.server.port=8000"
+      - "traefik.http.routers.backend-dev.service=backend-dev"
+      
 
   traefik:
     image: traefik:v2.8
+    profiles: 
+      - prod
     restart: unless-stopped
     env_file:
       - .env
@@ -40,4 +88,40 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /letsencrypt:/letsencrypt
+
+  traefik-dev:
+    image: traefik:v2.8
+    profiles:
+      - dev
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
   
+  postgres:
+    image: postgres:16
+    profiles: ["dev", "prod"]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 55432:5432
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U runvia -d runvia"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  
+volumes:
+  pg_data:

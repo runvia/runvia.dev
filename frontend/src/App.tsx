@@ -7,9 +7,6 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import CV from './pages/CV';
 import Projects from './pages/Project';
-import { ExperienceList } from './pages/ExperienceList'
-import { ExperienceForm } from './pages/ExperienceForm';
-
 
 export default function App() {
     return(
@@ -27,24 +24,6 @@ export default function App() {
               <PrivateRoute>
                 <SecretPage />
               </PrivateRoute>
-            }
-          />
-          <Route 
-            path='/admin/experience'
-            element={
-              <ExperienceList/>
-            }
-          />
-          <Route 
-            path='/admin/experience/new'
-            element={
-              <ExperienceForm/>
-            }
-          />
-          <Route 
-            path='/admin/experience/:id/edit'
-            element={
-              <ExperienceForm/>
             }
           />
         </Routes>
