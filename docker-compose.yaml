@@ -26,7 +26,6 @@ services:
       - "traefik.http.routers.frontend.entrypoints=web,websecure"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.certresolver=lets-encrypt"
-      - "traefik.http.services.frontend.loadbalancer.server.port=80"
       - "traefik.http.routers.frontend.priority=1"
 
   frontend-dev:
@@ -46,7 +45,7 @@ services:
       - prod
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend-dev.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=web,websecure"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=lets-encrypt"
@@ -82,6 +81,10 @@ services:
       - "--certificatesresolvers.lets-encrypt.acme.dnschallenge.delaybeforecheck=0"
       - "--certificatesresolvers.lets-encrypt.acme.email=contact@runvia.dev"
       - "--certificatesresolvers.lets-encrypt.acme.storage=/letsencrypt/acme.json"
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--accesslog=true"
+      - "--log.level=DEBUG"
     ports:
       - "80:80"
       - "443:443"
