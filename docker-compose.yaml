@@ -81,10 +81,6 @@ services:
       - "--certificatesresolvers.lets-encrypt.acme.dnschallenge.delaybeforecheck=0"
       - "--certificatesresolvers.lets-encrypt.acme.email=contact@runvia.dev"
       - "--certificatesresolvers.lets-encrypt.acme.storage=/letsencrypt/acme.json"
-      - "--api.insecure=true"
-      - "--api.dashboard=true"
-      - "--accesslog=true"
-      - "--log.level=DEBUG"
     ports:
       - "80:80"
       - "443:443"
