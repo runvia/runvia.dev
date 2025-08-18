@@ -48,7 +48,7 @@ admin = Admin(
     app=app,
     engine=engine,
     authentication_backend=JWTAdminAuth(secret_key="super-secret-cookie-key"),
-    base_url="/admin",
+    base_url="/api/admin",
 )
 
 # Register each model by subclassing ModelView
