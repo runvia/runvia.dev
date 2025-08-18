@@ -22,6 +22,9 @@ class CV(SQLModel, table=True):
     education: List["EducationItem"] = Relationship(back_populates='cv')
     skills: List["SkillItem"] = Relationship(back_populates="cvs", link_model=CVSkill)
 
+    def __repr__(self):
+        return self.name
+
 
 
 class ExperienceItem(SQLModel, table=True):
