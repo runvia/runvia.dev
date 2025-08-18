@@ -62,8 +62,9 @@ class ExperienceAdmin(ModelView, model=ExperienceItem):
         ExperienceItem.start,
         ExperienceItem.end,
         ExperienceItem.description,
-        ExperienceItem.cv_id,
+        ExperienceItem.cv,
     ]
+    form_ajax_refs = {"cv": {"fields": ("name", "title")}}
 
 class EducationAdmin(ModelView, model=EducationItem):
     column_list = [EducationItem.institution, EducationItem.degree, EducationItem.start]
@@ -75,8 +76,9 @@ class EducationAdmin(ModelView, model=EducationItem):
         EducationItem.start,
         EducationItem.end,
         EducationItem.details,
-        EducationItem.cv_id
+        EducationItem.cv,
     ]
+    form_ajax_refs = {"cv": {"fields": ("name", "title")}}
 
 class SkillAdmin(ModelView, model=SkillItem):
     column_sortable_list = [SkillItem.proficiency]
@@ -100,7 +102,9 @@ class SkillAdmin(ModelView, model=SkillItem):
     ]
 
 class CVAdmin(ModelView, model=CV):
-    pass
+    form_columns = ["name","title","experience","education","skills"]
+
+    
 
 class UserAdmin(ModelView, model=User):
     column_list = [User.username, User.is_active, User.is_superuser]
