@@ -52,6 +52,14 @@ services:
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
       - "traefik.http.routers.backend.service=backend"
       - "traefik.http.routers.backend.priority=100"
+      - "traefik.http.routers.backend-admin.rule=PathPrefix(`/admin`)"
+      - "traefik.http.routers.backend-admin.entrypoints=web,websecure"
+      - "traefik.http.routers.backend-admin.tls=true"
+      - "traefik.http.routers.backend-admin.tls.certresolver=lets-encrypt"
+      - "traefik.http.routers.backend-admin.priority=120"
+      - "traefik.http.routers.backend-admin.middlewares=admin-addprefix"
+      - "traefik.http.routers.backend-admin.service=backend"
+      - "traefik.http.middlewares.admin-addprefix.addprefix.prefix=/api"
 
   backend-dev:
     <<: *backend_base
@@ -64,6 +72,12 @@ services:
       - "traefik.http.routers.backend-dev.priority=100"
       - "traefik.http.services.backend-dev.loadbalancer.server.port=8000"
       - "traefik.http.routers.backend-dev.service=backend-dev"
+      - "traefik.http.routers.backend-admin-dev.rule=PathPrefix(`/admin`)"
+      - "traefik.http.routers.backend-admin-dev.entrypoints=web"
+      - "traefik.http.routers.backend-admin-dev.priority=120"
+      - "traefik.http.routers.backend-admin-dev.middlewares=admin-addprefix-dev"
+      - "traefik.http.routers.backend-admin-dev.service=backend-dev"
+      - "traefik.http.middlewares.admin-addprefix-dev.addprefix.prefix=/api"
 
   traefik:
     image: traefik:v2.8
