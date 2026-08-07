@@ -9,8 +9,12 @@ x-backend-base: &backend_base
     - "8000"
   environment:
     DATABASE_URL: ${DATABASE_URL}
+    DATABASE_ECHO: ${DATABASE_ECHO}
     ADMIN_USERNAME: ${ADMIN_USERNAME}
     ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    SECRET_KEY: ${SECRET_KEY}
+    SESSION_SECRET_KEY: ${SESSION_SECRET_KEY}
+
   depends_on:
     postgres:
       condition: service_healthy
@@ -32,6 +36,8 @@ services:
     <<: *frontend_base
     profiles:
       - dev
+    networks:
+      - traefik-net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend-dev.rule=PathPrefix(`/`) && !PathPrefix(`/api`)"
@@ -65,6 +71,8 @@ services:
     <<: *backend_base
     profiles:
       - dev
+    networks:
+      - traefik-net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend-dev.rule=PathPrefix(`/api`)"
@@ -80,7 +88,7 @@ services:
       - "traefik.http.middlewares.admin-addprefix-dev.addprefix.prefix=/api"
 
   traefik:
-    image: traefik:v2.8
+    image: traefik:v3
     profiles:
       - prod
     restart: unless-stopped
@@ -103,25 +111,28 @@ services:
       - /letsencrypt:/letsencrypt
 
   traefik-dev:
-    image: traefik:v2.8
+    image: traefik:v3
     profiles:
       - dev
+    networks:
+      - traefik-net
     command:
       - "--providers.docker=true"
+      - "--providers.docker.endpoint=tcp://host.docker.internal:2375"
       - "--entrypoints.web.address=:80"
       - "--api.insecure=true"
       - "--api.dashboard=true"
       - "--accesslog=true"
-      - "--log.level=DEBUG"
+      - "--log.level=INFO"
     ports:
       - "80:80"
       - "8080:8080"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
 
   postgres:
     image: postgres:16
     profiles: ["dev", "prod"]
+    networks:
+      - traefik-net
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -138,3 +149,6 @@ services:
 
 volumes:
   pg_data:
+
+networks:
+  traefik-net:

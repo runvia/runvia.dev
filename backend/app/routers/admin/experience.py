@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 @router.get("/", response_model=List[ExperienceRead])
-def list_expreriences(*, session: Session = Depends(get_session)) -> List[ExperienceRead]:
+def list_experiences(*, session: Session = Depends(get_session)) -> List[ExperienceRead]:
     """
     Retrive all experience entries
     """

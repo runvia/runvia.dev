@@ -7,24 +7,18 @@ from jose import jwt, JWTError
 from sqlmodel import Session, select
 from app.db import engine
 from passlib.context import CryptContext
+from decouple import config
 
 from app.models.user import User
 
 # Secret & algoritm
-SECRET_KEY = "super-secret-key"
+SECRET_KEY = config("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
-
-fake_users = {
-    "niclas": {
-        "username": "niclas",
-        "hashed_password": pwd_context.hash("yourpassword"),
-    }
-}
 
 def hash_password(plain: str) -> str:
     """Hash the provided password"""
@@ -78,11 +72,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials"
     )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if not username or username not in fake_users:
-            raise credentials_exception
-    except JWTError as exc:
-        raise credentials_exception from exc
-    return fake_users[username]
+    user = get_user_from_token(token)
+    if not user:
+        raise credentials_exception
+    return user

@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import date
-from pydantic import BaseModel, Field, conint
+from pydantic import BaseModel, Field, conint, ConfigDict
 from app.models.cv import SkillCategory
 
 
@@ -14,8 +14,7 @@ class ExperienceCreate(BaseModel):
     end: Optional[date]
     description: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ExperienceRead(ExperienceCreate):
     """
@@ -31,8 +30,7 @@ class ExperienceUpdate(BaseModel):
     end: Optional[date] = None
     description: Optional[str] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 
@@ -46,8 +44,7 @@ class EducationCreate(BaseModel):
     end: Optional[date]
     details: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class EducationUpdate(BaseModel):
     """
@@ -59,8 +56,7 @@ class EducationUpdate(BaseModel):
     end: Optional[date]
     details: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class EducationRead(EducationCreate):
     """
@@ -81,8 +77,7 @@ class SkillCreate(BaseModel):
     tools: List[str] = Field(default_factory=list)
     description: Optional[str] = Field(default=None, max_length=300)
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class SkillUpdate(BaseModel):
     """
@@ -96,8 +91,7 @@ class SkillUpdate(BaseModel):
     tools: Optional[List[str]] = None
     description: Optional[str] = Field(default=None, max_length=300)
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class SkillRead(SkillCreate):
     """
@@ -115,8 +109,7 @@ class CVCreate(BaseModel):
     education: List[int]         # list of EducationItem IDs
     skills: List[int]            # list of Skill IDs
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CVRead(CVCreate):
@@ -137,8 +130,7 @@ class CVUpdate(BaseModel):
     education: Optional[List[int]] = None
     skills: Optional[List[int]] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CVDetail(BaseModel):
@@ -149,6 +141,5 @@ class CVDetail(BaseModel):
     education: List[EducationRead]
     skills: List[SkillRead]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
