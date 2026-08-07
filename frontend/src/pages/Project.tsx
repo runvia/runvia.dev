@@ -26,7 +26,7 @@ export default function Projects(): JSX.Element {
         <h2 className="text-4xl font-extrabold text-gray-900 mb-4">Projects & Tools</h2>
         <p className="text-lg text-gray-600">
           runvia.dev is a platform for tools, games, and experiments - from converters and utilities
-          to machine learning projects. Here's what's in the pipeline.
+          to machine learning projects. Here is what is in the pipeline.
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
