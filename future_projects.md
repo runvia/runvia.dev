@@ -4,3 +4,11 @@ This game will be played on an endless map, with 2 players.
 Each player set a x in a square in turns, and the purpose is to be the first to have 5 in a row
 
 The game can also be played against the computer on different difficulties. Maybe include some MachineLeaning for the computer opponent
+
+
+# Yatzee
+
+This is just a standard Yatzee game, where you can choose to play with 5 or 6 dices.
+It should be possible to add up to 10 players. And include the posibility to play with a computer, with varying difficulty settings either easy, medium or hard
+
+The logic for the computer need to be based on optimizing the average score possible.
