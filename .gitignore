@@ -181,3 +181,9 @@ cython_debug/
 .vscode/
 letsencrypt/
 /package-lock.json
+
+*.dump
+*.backup
+
+# Local-only notes (security findings etc.) - never commit
+*.local.md

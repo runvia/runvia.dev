@@ -22,7 +22,7 @@ export default function Login(): JSX.Element {
             const data = await res.json();
             login(data.access_token);
             navigate('/secret', { replace: true });
-        } catch (err) {
+        } catch {
             setError('Login Failed')
         }
     };

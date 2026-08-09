@@ -1,0 +1,25 @@
+[project]
+name = "runvia-backend"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.19.1",
+    "fastapi>=0.141.1",
+    "itsdangerous>=2.1.2",
+    "passlib[bcrypt]>=1.7.4",
+    "psycopg2-binary>=2.9.12",
+    "python-decouple>=3.8",
+    "python-jose[cryptography]>=3.3.0",
+    "python-multipart>=0.0.32",
+    "sqladmin>=0.31.0",
+    "sqlmodel>=0.0.39",
+    "uvicorn>=0.52.1",
+    "wtforms>=3.2.2",
+]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+    "httpx>=0.28.1",
+    "pytest>=9.1.1",
+]
