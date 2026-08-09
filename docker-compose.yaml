@@ -36,8 +36,6 @@ services:
     <<: *frontend_base
     profiles:
       - dev
-    networks:
-      - traefik-net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend-dev.rule=PathPrefix(`/`) && !PathPrefix(`/api`)"
@@ -71,8 +69,6 @@ services:
     <<: *backend_base
     profiles:
       - dev
-    networks:
-      - traefik-net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend-dev.rule=PathPrefix(`/api`)"
@@ -114,8 +110,6 @@ services:
     image: traefik:v3
     profiles:
       - dev
-    networks:
-      - traefik-net
     command:
       - "--providers.docker=true"
       - "--entrypoints.web.address=:80"
@@ -132,8 +126,6 @@ services:
   postgres:
     image: postgres:16
     profiles: ["dev", "prod"]
-    networks:
-      - traefik-net
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -150,6 +142,3 @@ services:
 
 volumes:
   pg_data:
-
-networks:
-  traefik-net:
