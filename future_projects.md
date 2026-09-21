@@ -12,3 +12,8 @@ This is just a standard Yatzee game, where you can choose to play with 5 or 6 di
 It should be possible to add up to 10 players. And include the posibility to play with a computer, with varying difficulty settings either easy, medium or hard
 
 The logic for the computer need to be based on optimizing the average score possible.
+
+
+# Slider to adjust level of dark mode
+
+Implement a site wide slider to set the level of dark mode, from white to black.
