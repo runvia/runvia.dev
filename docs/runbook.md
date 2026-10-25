@@ -373,6 +373,7 @@ where the live site had 4.
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" https://runvia.dev/                    # 200, TLS validates without -k
+curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" http://runvia.dev/     # 301 redirect to https
 curl -s https://runvia.dev/api/cv | head -c 200                                 # CV JSON
 curl -s -o /dev/null -w "%{http_code}\n" https://runvia.dev/api/health          # 200
 docker compose --profile prod ps                                                # all up, postgres healthy
@@ -386,12 +387,6 @@ accepts `ADMIN_USERNAME` / `ADMIN_PASSWORD`.
 `Started server process [1]` in the backend log matters: uvicorn as PID 1
 receives `SIGTERM` directly, so `docker stop` drains in-flight requests instead
 of being `SIGKILL`ed after ten seconds.
-
-### Expected failures — not regressions
-
-| Request | Result | Tracked as |
-|---|---|---|
-| `http://runvia.dev/` | 404, no redirect | #10 |
 
 ## 13. Back up the database
 
