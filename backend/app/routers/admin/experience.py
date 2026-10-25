@@ -7,8 +7,6 @@ from app.models.cv import ExperienceItem
 from app.schemas.cv import ExperienceCreate, ExperienceRead, ExperienceUpdate
 
 router = APIRouter(
-    prefix="",
-    tags=["Admin"],
     responses={404: {'description': "Not Found"}},
 )
 

@@ -7,8 +7,6 @@ from app.models.cv import SkillItem
 from app.schemas.cv import SkillCreate, SkillRead, SkillUpdate
 
 router = APIRouter(
-    prefix="/admin/skill",
-    tags=["Admin"],
     responses={404: {'description': "Not Found"}},
 )
 

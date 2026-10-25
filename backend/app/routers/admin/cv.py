@@ -7,8 +7,6 @@ from app.models.cv import CV, ExperienceItem, EducationItem, SkillItem
 from app.schemas.cv import CVCreate, CVRead, CVUpdate, CVDetail
 
 router = APIRouter(
-    prefix="/admin/cv",
-    tags=["Admin"],
     responses={404: {"description": "Not found"}},
 )
 

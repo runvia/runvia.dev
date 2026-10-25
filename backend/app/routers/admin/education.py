@@ -7,8 +7,6 @@ from app.models.cv import EducationItem
 from app.schemas.cv import EducationCreate, EducationRead, EducationUpdate
 
 router = APIRouter(
-    prefix="/admin/education",
-    tags=["Admin"],
     responses={404: {'description': "Not Found"}},
 )
 

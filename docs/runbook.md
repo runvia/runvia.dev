@@ -374,7 +374,7 @@ where the live site had 4.
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" https://runvia.dev/                    # 200, TLS validates without -k
 curl -s https://runvia.dev/api/cv | head -c 200                                 # CV JSON
-curl -s -o /dev/null -w "%{http_code}\n" https://runvia.dev/api/health/health   # 200
+curl -s -o /dev/null -w "%{http_code}\n" https://runvia.dev/api/health          # 200
 docker compose --profile prod ps                                                # all up, postgres healthy
 docker compose --profile prod logs backend | tail -20                           # migrations applied
 ```
@@ -391,8 +391,6 @@ of being `SIGKILL`ed after ten seconds.
 
 | Request | Result | Tracked as |
 |---|---|---|
-| `/api/health` | 404 | #12 — duplicated router prefixes |
-| `/api/secret` | 404 | #12 |
 | `/api/admin/...` | SQLAdmin HTML | #13 — mount shadows the JSON API |
 | `http://runvia.dev/` | 404, no redirect | #10 |
 
