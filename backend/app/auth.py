@@ -5,29 +5,42 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from sqlmodel import Session, select
-from app.db import engine
-from passlib.context import CryptContext
+
+import bcrypt
+
 from decouple import config
 
+from app.db import engine
 from app.models.user import User
+
 
 # Secret & algoritm
 SECRET_KEY = config("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+MAX_PASSWORD_BYTES = 72
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
 def hash_password(plain: str) -> str:
     """Hash the provided password"""
-    return pwd_context.hash(plain)
+    bytes_string = plain.encode("utf-8")
+    if len(bytes_string) > MAX_PASSWORD_BYTES:
+        raise ValueError(f"Password longer than {MAX_PASSWORD_BYTES} bytes")
+    salt = bcrypt.gensalt()
+    password_hash = bcrypt.hashpw(bytes_string, salt)
+    
+    return password_hash.decode('utf-8')
 
 
 def verify_password(plain: str, hashed: str) -> bool:
     """Helper function to verify password"""
-    return pwd_context.verify(plain, hashed)
+    plain_bytes = plain.encode('utf-8')
+    if len(plain_bytes) > MAX_PASSWORD_BYTES:
+        return False
+    hashed_bytes = hashed.encode('utf-8')
+    return bcrypt.checkpw(plain_bytes, hashed_bytes)
 
 def get_user_by_username(session: Session, username: str) -> Optional[User]:
     return session.exec(select(User).where(User.username == username)).first()
