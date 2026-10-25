@@ -1,6 +1,6 @@
 # app/main.py
 
-from fastapi import FastAPI, APIRouter, Depends
+from fastapi import FastAPI, APIRouter
 from contextlib import asynccontextmanager
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
@@ -8,10 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 # your existing routers
 from app.routers import health, auth, secret
 from app.routers import cv as public_cv      # public CV endpoint
-from app.routers.admin import (
-    experience, education, skill, cv as admin_cv
-)
-from app.auth import get_current_user, hash_password
+from app.auth import hash_password
 
 # SQLAdmin imports
 from sqladmin import Admin, ModelView
@@ -154,32 +151,6 @@ api_router.include_router(
     public_cv.router,
     prefix="/cv",
     tags=["public_cv"]
-)
-
-# admin CRUD endpoints, to be called by your React app via /api/admin/...
-api_router.include_router(
-    experience.router,
-    prefix="/admin/experience",
-    tags=["admin_experience"],
-    dependencies=[Depends(get_current_user)]
-)
-api_router.include_router(
-    education.router,
-    prefix="/admin/education",
-    tags=["admin_education"],
-    dependencies=[Depends(get_current_user)]
-)
-api_router.include_router(
-    skill.router,
-    prefix="/admin/skill",
-    tags=["admin_skill"],
-    dependencies=[Depends(get_current_user)]
-)
-api_router.include_router(
-    admin_cv.router,
-    prefix="/admin/cv",
-    tags=["admin_cv"],
-    dependencies=[Depends(get_current_user)]
 )
 
 # attach the /api router

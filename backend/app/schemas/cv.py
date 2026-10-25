@@ -23,17 +23,6 @@ class ExperienceRead(ExperienceCreate):
     id: int
 
 
-class ExperienceUpdate(BaseModel):
-    company: Optional[str] = None
-    role: Optional[str] = None
-    start: Optional[date] = None
-    end: Optional[date] = None
-    description: Optional[str] = None
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-
 class EducationCreate(BaseModel):
     """
     An Education entry in my cv
@@ -46,17 +35,6 @@ class EducationCreate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class EducationUpdate(BaseModel):
-    """
-    An Education entry in my cv
-    """
-    institution: Optional[str]
-    degree: Optional[str]
-    start: Optional[date]
-    end: Optional[date]
-    details: Optional[str]
-
-    model_config = ConfigDict(from_attributes=True)
 
 class EducationRead(EducationCreate):
     """
@@ -79,58 +57,12 @@ class SkillCreate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class SkillUpdate(BaseModel):
-    """
-    A single skill entry for my CV.
-    """
-    name: Optional[str] = None
-    proficiency: Optional[str] = None
-    category: Optional[SkillCategory] = None
-    years_experience: Optional[conint(ge=0)] = None
-    last_used: Optional[date] = None
-    tools: Optional[List[str]] = None
-    description: Optional[str] = Field(default=None, max_length=300)
-
-    model_config = ConfigDict(from_attributes=True)
 
 class SkillRead(SkillCreate):
     """
     What we return when we read a skill
     """
     id: int
-
-class CVCreate(BaseModel):
-    """
-    Data required to create a new CV record.
-    """
-    name: str
-    title: str
-    experience: List[int]        # list of ExperienceItem IDs
-    education: List[int]         # list of EducationItem IDs
-    skills: List[int]            # list of Skill IDs
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class CVRead(CVCreate):
-    """
-    What we return when reading a CV.
-    """
-    id: int
-
-
-class CVUpdate(BaseModel):
-    """
-    Fields you can change on an existing CV.
-    All are optional so you can update parts.
-    """
-    name: Optional[str] = None
-    title: Optional[str] = None
-    experience: Optional[List[int]] = None
-    education: Optional[List[int]] = None
-    skills: Optional[List[int]] = None
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class CVDetail(BaseModel):
@@ -142,4 +74,3 @@ class CVDetail(BaseModel):
     skills: List[SkillRead]
 
     model_config = ConfigDict(from_attributes=True)
-

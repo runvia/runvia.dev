@@ -391,7 +391,6 @@ of being `SIGKILL`ed after ten seconds.
 
 | Request | Result | Tracked as |
 |---|---|---|
-| `/api/admin/...` | SQLAdmin HTML | #13 — mount shadows the JSON API |
 | `http://runvia.dev/` | 404, no redirect | #10 |
 
 ## 13. Back up the database
