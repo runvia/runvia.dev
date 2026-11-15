@@ -1,24 +1,26 @@
 # app/main.py
 
-from fastapi import FastAPI, APIRouter
 from contextlib import asynccontextmanager
-from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 
-# your existing routers
-from app.routers import health, auth, secret
-from app.routers import cv as public_cv      # public CV endpoint
-from app.auth import hash_password
+from decouple import config
+from fastapi import APIRouter, FastAPI
 
 # SQLAdmin imports
 from sqladmin import Admin, ModelView
+from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from wtforms import PasswordField, StringField, validators
-from app.admin_auth import JWTAdminAuth        # your AuthenticationBackend subclass
+
+from app.admin_auth import JWTAdminAuth  # your AuthenticationBackend subclass
+from app.auth import hash_password
 from app.db import engine
-from app.models.cv import ExperienceItem, EducationItem, SkillItem, CV
+from app.models.cv import CV, EducationItem, ExperienceItem, SkillItem
 from app.models.user import User
+
+# your existing routers
+from app.routers import auth, health, secret
+from app.routers import cv as public_cv  # public CV endpoint
 from app.startup import ensure_default_admin
-from decouple import config
 
 SESSION_SECRET_KEY = config("SESSION_SECRET_KEY")
 
@@ -27,6 +29,7 @@ SESSION_SECRET_KEY = config("SESSION_SECRET_KEY")
 async def lifespan(app: FastAPI):
     ensure_default_admin()
     yield
+
 
 app = FastAPI(title="Runvia.dev API", lifespan=lifespan, root_path="/api")
 
@@ -50,9 +53,15 @@ admin = Admin(
     base_url="/admin",
 )
 
+
 # Register each model by subclassing ModelView
 class ExperienceAdmin(ModelView, model=ExperienceItem):
-    column_list = [ExperienceItem.company, ExperienceItem.role, ExperienceItem.start, ExperienceItem.end]
+    column_list = [
+        ExperienceItem.company,
+        ExperienceItem.role,
+        ExperienceItem.start,
+        ExperienceItem.end,
+    ]
     column_sortable_list = [ExperienceItem.start]
     column_searchable_list = [ExperienceItem.company]
     form_columns = [
@@ -64,6 +73,7 @@ class ExperienceAdmin(ModelView, model=ExperienceItem):
         ExperienceItem.cv,
     ]
     form_ajax_refs = {"cv": {"fields": ("name", "title")}}
+
 
 class EducationAdmin(ModelView, model=EducationItem):
     column_list = [EducationItem.institution, EducationItem.degree, EducationItem.start]
@@ -78,6 +88,7 @@ class EducationAdmin(ModelView, model=EducationItem):
         EducationItem.cv,
     ]
     form_ajax_refs = {"cv": {"fields": ("name", "title")}}
+
 
 class SkillAdmin(ModelView, model=SkillItem):
     column_sortable_list = [SkillItem.proficiency]
@@ -100,10 +111,10 @@ class SkillAdmin(ModelView, model=SkillItem):
         SkillItem.description,
     ]
 
-class CVAdmin(ModelView, model=CV):
-    form_columns = ["name","title","experience","education","skills"]
 
-    
+class CVAdmin(ModelView, model=CV):
+    form_columns = ["name", "title", "experience", "education", "skills"]
+
 
 class UserAdmin(ModelView, model=User):
     column_list = [User.username, User.is_active, User.is_superuser]
@@ -122,6 +133,7 @@ class UserAdmin(ModelView, model=User):
         if data.get("hashed_password"):
             data["hashed_password"] = hash_password(data["hashed_password"])
 
+
 admin.add_view(ExperienceAdmin)
 admin.add_view(EducationAdmin)
 admin.add_view(SkillAdmin)
@@ -137,23 +149,9 @@ api_router.include_router(
     prefix="/health",
     tags=["health"],
 )
-api_router.include_router(
-    auth.router,
-    prefix="/auth",
-    tags=["auth"]
-)
-api_router.include_router(
-    secret.router,
-    prefix="/secret", 
-    tags=["secret"]
-)
-api_router.include_router(
-    public_cv.router,
-    prefix="/cv",
-    tags=["public_cv"]
-)
+api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
+api_router.include_router(secret.router, prefix="/secret", tags=["secret"])
+api_router.include_router(public_cv.router, prefix="/cv", tags=["public_cv"])
 
 # attach the /api router
 app.include_router(api_router)
-
-

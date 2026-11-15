@@ -1,8 +1,9 @@
 from datetime import timedelta
 
-from starlette.requests import Request
 from sqladmin.authentication import AuthenticationBackend
-from app.auth import get_user_from_token, authenticate_user, create_access_token
+from starlette.requests import Request
+
+from app.auth import authenticate_user, create_access_token, get_user_from_token
 
 
 class JWTAdminAuth(AuthenticationBackend):
@@ -23,15 +24,17 @@ class JWTAdminAuth(AuthenticationBackend):
         if not user:
             return False
 
-        token = create_access_token({"sub": user.username}, expires_delta=timedelta(hours=12))
+        token = create_access_token(
+            {"sub": user.username}, expires_delta=timedelta(hours=12)
+        )
         request.session["token"] = token
         return True
-    
+
     async def logout(self, request: Request) -> bool:
         request.session.clear()
         return True
-        
-    async def authenticate(self, request: Request) -> bool: 
+
+    async def authenticate(self, request: Request) -> bool:
         token = request.session.get("token")
         if not token:
             return False

@@ -1,12 +1,17 @@
 # seed_skills.py
 from datetime import date
-from sqlmodel import SQLModel, Session, create_engine, select
-from .models.cv import SkillItem, SkillCategory  # adjust import to your project
+
+from sqlmodel import Session, SQLModel, select
+
 from .db import engine
+from .models.cv import SkillCategory, SkillItem  # adjust import to your project
+
 
 def get_or_create(session: Session, item: SkillItem):
     existing = session.exec(
-        select(SkillItem).where(SkillItem.name == item.name, SkillItem.category == item.category)
+        select(SkillItem).where(
+            SkillItem.name == item.name, SkillItem.category == item.category
+        )
     ).first()
     if existing:
         # update lightweight fields if you want
@@ -19,6 +24,7 @@ def get_or_create(session: Session, item: SkillItem):
     session.add(item)
     return item
 
+
 def main():
     SQLModel.metadata.create_all(engine)
     skills = [
@@ -29,7 +35,16 @@ def main():
             proficiency="Advanced",
             years_experience=5,
             last_used=date(2025, 8, 1),
-            tools=["Django", "FastAPI", "pytest", "mypy", "pylint", "flake8", "Black", "setuptools"],
+            tools=[
+                "Django",
+                "FastAPI",
+                "pytest",
+                "mypy",
+                "pylint",
+                "flake8",
+                "Black",
+                "setuptools",
+            ],
             description="OOP, decorators, generators, packaging, testing, type checking.",
         ),
         SkillItem(
@@ -50,7 +65,6 @@ def main():
             tools=[],
             description="Branching, PR workflows, code reviews, tagging, releases.",
         ),
-
         # Networking & Automation
         SkillItem(
             name="Cisco DevNet Associate",
@@ -79,7 +93,6 @@ def main():
             tools=["Meraki Dashboard API", "Python"],
             description="Scripts for 300+ orgs, inventory lookups, clients, LLDP/CDP.",
         ),
-
         # Data Science
         SkillItem(
             name="Applied Data Science (Python)",
@@ -90,7 +103,6 @@ def main():
             tools=["pandas", "scikit-learn", "matplotlib"],
             description="Predictive modeling, data prep, ML workflows.",
         ),
-
         # Architecture
         SkillItem(
             name="IT Architect (Foundation)",
@@ -101,7 +113,6 @@ def main():
             tools=["Architecture methods", "Processes"],
             description="Principles, methods, tasks; stakeholder collaboration.",
         ),
-
         # Other
         SkillItem(
             name="Packaging & Deployment",
@@ -118,7 +129,15 @@ def main():
             proficiency="Advanced",
             years_experience=4,
             last_used=date(2025, 8, 1),
-            tools=["pytest", "unittest", "mypy", "pylint", "flake8", "Black", "logging"],
+            tools=[
+                "pytest",
+                "unittest",
+                "mypy",
+                "pylint",
+                "flake8",
+                "Black",
+                "logging",
+            ],
             description="Test suites, CI linting, type safety, structured logs.",
         ),
         SkillItem(
@@ -154,6 +173,7 @@ def main():
         for s in skills:
             get_or_create(session, s)
         session.commit()
+
 
 if __name__ == "__main__":
     main()

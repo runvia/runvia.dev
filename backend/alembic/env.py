@@ -1,21 +1,17 @@
 from logging.config import fileConfig
-import os
 
-from decouple import config
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
 from alembic import context
+from decouple import config
+from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
-from app.models.cv import ExperienceItem, EducationItem, CV, SkillItem
-from app.models.user import User
+from app.models.cv import CV, EducationItem, ExperienceItem, SkillItem  # noqa: F401 required for alembic
+from app.models.user import User  # noqa: F401 required for alembic
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 alembic_cfg = context.config
-alembic_cfg.set_main_option(
-    "sqlalchemy.url", config("DATABASE_URL")
-)
+alembic_cfg.set_main_option("sqlalchemy.url", config("DATABASE_URL"))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -72,9 +68,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
