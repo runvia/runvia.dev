@@ -19,7 +19,12 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "flake8>=7.3.0",
     "httpx>=0.28.1",
     "pytest>=9.1.1",
+    "ruff>=0.17.5",
+]
+
+[tool.ruff]
+extend-exclude = [
+    "alembic/versions/",
 ]
