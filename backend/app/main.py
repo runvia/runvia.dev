@@ -2,7 +2,6 @@
 
 from contextlib import asynccontextmanager
 
-from decouple import config
 from fastapi import APIRouter, FastAPI
 
 # SQLAdmin imports
@@ -13,6 +12,7 @@ from wtforms import PasswordField, StringField, validators
 
 from app.admin_auth import JWTAdminAuth  # your AuthenticationBackend subclass
 from app.auth import hash_password
+from app.config import get_settings
 from app.db import engine
 from app.models.cv import CV, EducationItem, ExperienceItem, SkillItem
 from app.models.user import User
@@ -21,8 +21,6 @@ from app.models.user import User
 from app.routers import auth, health, secret
 from app.routers import cv as public_cv  # public CV endpoint
 from app.startup import ensure_default_admin
-
-SESSION_SECRET_KEY = config("SESSION_SECRET_KEY")
 
 
 @asynccontextmanager
@@ -34,7 +32,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Runvia.dev API", lifespan=lifespan, root_path="/api")
 
 # 1) SessionMiddleware is required for SQLAdmin’s login sessions
-app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
+app.add_middleware(
+    SessionMiddleware, secret_key=get_settings().session_secret_key.get_secret_value()
+)
 
 # 2) CORS (for your React app on localhost:3000)
 app.add_middleware(
@@ -49,7 +49,9 @@ app.add_middleware(
 admin = Admin(
     app=app,
     engine=engine,
-    authentication_backend=JWTAdminAuth(secret_key=SESSION_SECRET_KEY),
+    authentication_backend=JWTAdminAuth(
+        secret_key=get_settings().session_secret_key.get_secret_value()
+    ),
     base_url="/admin",
 )
 

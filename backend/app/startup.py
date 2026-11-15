@@ -1,9 +1,9 @@
 from datetime import date
 
-from decouple import config
 from sqlmodel import Session, SQLModel, select
 
 from app.auth import hash_password
+from app.config import get_settings
 from app.db import engine
 from app.models.cv import SkillCategory, SkillItem
 from app.models.user import User
@@ -14,9 +14,12 @@ def ensure_default_admin(
     password: str | None = None,
 ) -> None:
     if username is None:
-        username = config("ADMIN_USERNAME", default=None)
+        username = get_settings().admin_username
     if password is None:
-        password = config("ADMIN_PASSWORD", default=None)
+        if get_settings().admin_password is None:
+            password = get_settings().admin_password
+        else:
+            password = get_settings().admin_password.get_secret_value()
 
     if not username or not password:
         print("[startup] Skipping admin seed: ADMIN_USERNAME/PASSWORD not set")

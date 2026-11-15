@@ -1,17 +1,17 @@
 from logging.config import fileConfig
 
 from alembic import context
-from decouple import config
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
+from app.config import get_settings
 from app.models.cv import CV, EducationItem, ExperienceItem, SkillItem  # noqa: F401 required for alembic
 from app.models.user import User  # noqa: F401 required for alembic
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 alembic_cfg = context.config
-alembic_cfg.set_main_option("sqlalchemy.url", config("DATABASE_URL"))
+alembic_cfg.set_main_option("sqlalchemy.url", get_settings().database_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

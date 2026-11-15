@@ -1,17 +1,16 @@
 from datetime import UTC, datetime, timedelta
 
 import bcrypt
-from decouple import config
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlmodel import Session, select
 
+from app.config import get_settings
 from app.db import engine
 from app.models.user import User
 
 # Secret & algoritm
-SECRET_KEY = config("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 MAX_PASSWORD_BYTES = 72
@@ -59,13 +58,17 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     expire = datetime.now(UTC) + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(
+        to_encode, get_settings().secret_key.get_secret_value(), algorithm=ALGORITHM
+    )
 
 
 def get_user_from_token(token: str) -> User | None:
     """Decode JWT, then load user from db"""
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token, get_settings().secret_key.get_secret_value(), algorithms=[ALGORITHM]
+        )
         username: str = payload.get("sub")
         if not username:
             return None

@@ -1,9 +1,8 @@
-from decouple import config
 from sqlmodel import Session, create_engine
 
-DATABASE_URL = config("DATABASE_URL")
-DATABASE_ECHO = config("DATABASE_ECHO", default=False, cast=bool)
-engine = create_engine(DATABASE_URL, echo=DATABASE_ECHO)
+from app.config import get_settings
+
+engine = create_engine(get_settings().database_url, echo=get_settings().database_echo)
 
 
 def get_session():
