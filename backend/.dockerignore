@@ -1,0 +1,14 @@
+# The virtualenv is created inside the image by `uv sync`.
+# A host copy would overwrite it, and its python symlink points
+# into /home/<user>/..., which doesn't exist in the container.
+.venv
+
+# Python and tool caches: rebuilt as needed, never useful in an image.
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+
+# Never copy local environment files (secrets) into an image.
+.env
+.env.*
