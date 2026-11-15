@@ -5,8 +5,8 @@ from decouple import config
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
-from app.models.cv import CV, EducationItem, ExperienceItem, SkillItem  # noqa: F401
-from app.models.user import User  # noqa: F401
+from app.models.cv import CV, EducationItem, ExperienceItem, SkillItem  # noqa: F401 required for alembic
+from app.models.user import User  # noqa: F401 required for alembic
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -1,4 +1,3 @@
-
 from sqlalchemy import Boolean, Column, String
 from sqlmodel import Field, SQLModel
 

@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
@@ -10,7 +12,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=CVDetail, tags=["CV"])
-def get_cv(db: Session = Depends(get_session)):
+def get_cv(db: Annotated[Session, Depends(get_session)]):
     """Return my CV Data."""
     query = select(CV).options(
         selectinload(CV.experience),
