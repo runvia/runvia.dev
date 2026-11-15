@@ -1,5 +1,5 @@
 from typing import Optional
-from decouple import config 
+from decouple import config
 from sqlmodel import Session, select
 from app.models.user import User
 from app.auth import hash_password
@@ -14,9 +14,9 @@ def ensure_default_admin(
     password: Optional[str] = None,
 ) -> None:
     if username is None:
-        username = config('ADMIN_USERNAME', default=None)
+        username = config("ADMIN_USERNAME", default=None)
     if password is None:
-        password = config('ADMIN_PASSWORD', default=None)
+        password = config("ADMIN_PASSWORD", default=None)
 
     if not username or not password:
         print("[startup] Skipping admin seed: ADMIN_USERNAME/PASSWORD not set")
@@ -39,7 +39,9 @@ def ensure_default_admin(
 
 def get_or_create(session: Session, item: SkillItem):
     existing = session.exec(
-        select(SkillItem).where(SkillItem.name == item.name, SkillItem.category == item.category)
+        select(SkillItem).where(
+            SkillItem.name == item.name, SkillItem.category == item.category
+        )
     ).first()
     if existing:
         # update lightweight fields if you want
@@ -52,6 +54,7 @@ def get_or_create(session: Session, item: SkillItem):
     session.add(item)
     return item
 
+
 def create_skills():
     SQLModel.metadata.create_all(engine)
     skills = [
@@ -62,7 +65,16 @@ def create_skills():
             proficiency="Advanced",
             years_experience=5,
             last_used=date(2025, 8, 1),
-            tools=["Django", "FastAPI", "pytest", "mypy", "pylint", "flake8", "Black", "setuptools"],
+            tools=[
+                "Django",
+                "FastAPI",
+                "pytest",
+                "mypy",
+                "pylint",
+                "flake8",
+                "Black",
+                "setuptools",
+            ],
             description="OOP, decorators, generators, packaging, testing, type checking.",
         ),
         SkillItem(
@@ -83,7 +95,6 @@ def create_skills():
             tools=[],
             description="Branching, PR workflows, code reviews, tagging, releases.",
         ),
-
         # Networking & Automation
         SkillItem(
             name="Cisco DevNet Associate",
@@ -112,7 +123,6 @@ def create_skills():
             tools=["Meraki Dashboard API", "Python"],
             description="Scripts for 300+ orgs, inventory lookups, clients, LLDP/CDP.",
         ),
-
         # Data Science
         SkillItem(
             name="Applied Data Science (Python)",
@@ -123,7 +133,6 @@ def create_skills():
             tools=["pandas", "scikit-learn", "matplotlib"],
             description="Predictive modeling, data prep, ML workflows.",
         ),
-
         # Architecture
         SkillItem(
             name="IT Architect (Foundation)",
@@ -134,7 +143,6 @@ def create_skills():
             tools=["Architecture methods", "Processes"],
             description="Principles, methods, tasks; stakeholder collaboration.",
         ),
-
         # Other
         SkillItem(
             name="Packaging & Deployment",
@@ -151,7 +159,15 @@ def create_skills():
             proficiency="Advanced",
             years_experience=4,
             last_used=date(2025, 8, 1),
-            tools=["pytest", "unittest", "mypy", "pylint", "flake8", "Black", "logging"],
+            tools=[
+                "pytest",
+                "unittest",
+                "mypy",
+                "pylint",
+                "flake8",
+                "Black",
+                "logging",
+            ],
             description="Test suites, CI linting, type safety, structured logs.",
         ),
         SkillItem(

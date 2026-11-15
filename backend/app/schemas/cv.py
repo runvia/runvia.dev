@@ -8,6 +8,7 @@ class ExperienceCreate(BaseModel):
     """
     A Work Exprience entry in my cv
     """
+
     company: str
     role: str
     start: date
@@ -16,10 +17,12 @@ class ExperienceCreate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class ExperienceRead(ExperienceCreate):
     """
     What we return when we read an Experience
     """
+
     id: int
 
 
@@ -27,6 +30,7 @@ class EducationCreate(BaseModel):
     """
     An Education entry in my cv
     """
+
     institution: str
     degree: str
     start: date
@@ -40,6 +44,7 @@ class EducationRead(EducationCreate):
     """
     What we return when we read an Education
     """
+
     id: int
 
 
@@ -47,6 +52,7 @@ class SkillCreate(BaseModel):
     """
     A single skill entry for my CV.
     """
+
     name: str
     proficiency: str  # whatever you already use
     category: Optional[SkillCategory] = None
@@ -62,6 +68,7 @@ class SkillRead(SkillCreate):
     """
     What we return when we read a skill
     """
+
     id: int
 
 

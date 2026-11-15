@@ -30,17 +30,18 @@ def hash_password(plain: str) -> str:
         raise ValueError(f"Password longer than {MAX_PASSWORD_BYTES} bytes")
     salt = bcrypt.gensalt()
     password_hash = bcrypt.hashpw(bytes_string, salt)
-    
-    return password_hash.decode('utf-8')
+
+    return password_hash.decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
     """Helper function to verify password"""
-    plain_bytes = plain.encode('utf-8')
+    plain_bytes = plain.encode("utf-8")
     if len(plain_bytes) > MAX_PASSWORD_BYTES:
         return False
-    hashed_bytes = hashed.encode('utf-8')
+    hashed_bytes = hashed.encode("utf-8")
     return bcrypt.checkpw(plain_bytes, hashed_bytes)
+
 
 def get_user_by_username(session: Session, username: str) -> Optional[User]:
     return session.exec(select(User).where(User.username == username)).first()
@@ -78,12 +79,11 @@ def get_user_from_token(token: str) -> Optional[User]:
         return get_user_by_username(session, username)
 
 
-
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     """async function that gets the current user"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials"
+        detail="Could not validate credentials",
     )
     user = get_user_from_token(token)
     if not user:

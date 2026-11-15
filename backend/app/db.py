@@ -1,9 +1,10 @@
-from decouple import config 
+from decouple import config
 from sqlmodel import Session, create_engine
 
-DATABASE_URL = config('DATABASE_URL')
+DATABASE_URL = config("DATABASE_URL")
 DATABASE_ECHO = config("DATABASE_ECHO", default=False, cast=bool)
 engine = create_engine(DATABASE_URL, echo=DATABASE_ECHO)
+
 
 def get_session():
     """
@@ -12,4 +13,3 @@ def get_session():
     """
     with Session(engine) as session:
         yield session
-

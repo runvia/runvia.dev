@@ -15,37 +15,39 @@ class CV(SQLModel, table=True):
     """
     My CV
     """
+
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     title: str
-    experience: List["ExperienceItem"] = Relationship(back_populates='cv')
-    education: List["EducationItem"] = Relationship(back_populates='cv')
+    experience: List["ExperienceItem"] = Relationship(back_populates="cv")
+    education: List["EducationItem"] = Relationship(back_populates="cv")
     skills: List["SkillItem"] = Relationship(back_populates="cvs", link_model=CVSkill)
 
     def __repr__(self):
         return self.name
 
 
-
 class ExperienceItem(SQLModel, table=True):
     """
     A Work Experience entry in my cv
     """
+
     id: Optional[int] = Field(default=None, primary_key=True)
     company: str
     role: str
     start: date
     end: Optional[date] = None
     description: str
-    
+
     cv_id: int = Field(default=None, foreign_key="cv.id", index=True)
     cv: Optional[CV] = Relationship(back_populates="experience")
-    
+
 
 class EducationItem(SQLModel, table=True):
     """
     An Education entry in my cv
     """
+
     id: Optional[int] = Field(default=None, primary_key=True)
     institution: str
     degree: str
@@ -69,8 +71,9 @@ class SkillItem(SQLModel, table=True):
     """
     A single skill entry for my CV.
     """
+
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str                # e.g. "Python", "Docker", "React"
+    name: str  # e.g. "Python", "Docker", "React"
     proficiency: Optional[str] = None
     category: Optional[SkillCategory] = Field(default=None)
     years_experience: Optional[int] = Field(default=None)
@@ -81,6 +84,3 @@ class SkillItem(SQLModel, table=True):
     )
     description: Optional[str] = Field(default=None)
     cvs: List[CV] = Relationship(back_populates="skills", link_model=CVSkill)
-
-
-

@@ -23,15 +23,17 @@ class JWTAdminAuth(AuthenticationBackend):
         if not user:
             return False
 
-        token = create_access_token({"sub": user.username}, expires_delta=timedelta(hours=12))
+        token = create_access_token(
+            {"sub": user.username}, expires_delta=timedelta(hours=12)
+        )
         request.session["token"] = token
         return True
-    
+
     async def logout(self, request: Request) -> bool:
         request.session.clear()
         return True
-        
-    async def authenticate(self, request: Request) -> bool: 
+
+    async def authenticate(self, request: Request) -> bool:
         token = request.session.get("token")
         if not token:
             return False
