@@ -1,0 +1,11 @@
+# Dependencies are installed inside the image by `npm ci`.
+# A copy from the host would overwrite them with packages built for
+# the wrong system (glibc on CachyOS vs musl on Alpine).
+node_modules
+
+# Build output: the image runs its own `npm run build`.
+dist
+
+# Never copy local environment files (secrets) into an image.
+.env
+.env.*
