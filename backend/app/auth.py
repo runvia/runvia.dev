@@ -1,18 +1,14 @@
-from datetime import datetime, timedelta, timezone
-from typing import Optional
-
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
-from sqlmodel import Session, select
+from datetime import UTC, datetime, timedelta
 
 import bcrypt
-
 from decouple import config
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from sqlmodel import Session, select
 
 from app.db import engine
 from app.models.user import User
-
 
 # Secret & algoritm
 SECRET_KEY = config("SECRET_KEY")
@@ -43,11 +39,11 @@ def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain_bytes, hashed_bytes)
 
 
-def get_user_by_username(session: Session, username: str) -> Optional[User]:
+def get_user_by_username(session: Session, username: str) -> User | None:
     return session.exec(select(User).where(User.username == username)).first()
 
 
-def authenticate_user(username: str, password: str) -> Optional[User]:
+def authenticate_user(username: str, password: str) -> User | None:
     """Function to authenticate the provided user"""
     with Session(engine) as session:
         user = get_user_by_username(session, username)
@@ -58,15 +54,15 @@ def authenticate_user(username: str, password: str) -> Optional[User]:
         return user
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
     """Creates the jwt token"""
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=15))
+    expire = datetime.now(UTC) + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def get_user_from_token(token: str) -> Optional[User]:
+def get_user_from_token(token: str) -> User | None:
     """Decode JWT, then load user from db"""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])

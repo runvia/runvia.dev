@@ -1,14 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
 from sqlalchemy.orm import selectinload
-from sqlalchemy import desc
-
+from sqlmodel import Session, select
 
 from app.db import get_session
-
+from app.models.cv import CV
 from app.schemas.cv import CVDetail
-from app.models.cv import CV, ExperienceItem, EducationItem
-
 
 router = APIRouter()
 

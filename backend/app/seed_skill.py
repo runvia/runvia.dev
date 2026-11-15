@@ -1,8 +1,10 @@
 # seed_skills.py
 from datetime import date
-from sqlmodel import SQLModel, Session, create_engine, select
-from .models.cv import SkillItem, SkillCategory  # adjust import to your project
+
+from sqlmodel import Session, SQLModel, select
+
 from .db import engine
+from .models.cv import SkillCategory, SkillItem  # adjust import to your project
 
 
 def get_or_create(session: Session, item: SkillItem):

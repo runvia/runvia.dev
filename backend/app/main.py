@@ -1,24 +1,26 @@
 # app/main.py
 
-from fastapi import FastAPI, APIRouter
 from contextlib import asynccontextmanager
-from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 
-# your existing routers
-from app.routers import health, auth, secret
-from app.routers import cv as public_cv  # public CV endpoint
-from app.auth import hash_password
+from decouple import config
+from fastapi import APIRouter, FastAPI
 
 # SQLAdmin imports
 from sqladmin import Admin, ModelView
+from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from wtforms import PasswordField, StringField, validators
+
 from app.admin_auth import JWTAdminAuth  # your AuthenticationBackend subclass
+from app.auth import hash_password
 from app.db import engine
-from app.models.cv import ExperienceItem, EducationItem, SkillItem, CV
+from app.models.cv import CV, EducationItem, ExperienceItem, SkillItem
 from app.models.user import User
+
+# your existing routers
+from app.routers import auth, health, secret
+from app.routers import cv as public_cv  # public CV endpoint
 from app.startup import ensure_default_admin
-from decouple import config
 
 SESSION_SECRET_KEY = config("SESSION_SECRET_KEY")
 

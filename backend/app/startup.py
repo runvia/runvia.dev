@@ -1,17 +1,17 @@
-from typing import Optional
+from datetime import date
+
 from decouple import config
-from sqlmodel import Session, select
-from app.models.user import User
+from sqlmodel import Session, SQLModel, select
+
 from app.auth import hash_password
 from app.db import engine
-from sqlmodel import SQLModel, Session, create_engine, select
-from app.models.cv import SkillItem, SkillCategory
-from datetime import date
+from app.models.cv import SkillCategory, SkillItem
+from app.models.user import User
 
 
 def ensure_default_admin(
-    username: Optional[str] = None,
-    password: Optional[str] = None,
+    username: str | None = None,
+    password: str | None = None,
 ) -> None:
     if username is None:
         username = config("ADMIN_USERNAME", default=None)

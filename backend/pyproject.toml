@@ -28,3 +28,6 @@ dev = [
 extend-exclude = [
     "alembic/versions/",
 ]
+
+[tool.ruff.lint.isort]
+known-third-party = ["alembic"]

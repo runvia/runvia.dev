@@ -1,8 +1,9 @@
 from datetime import timedelta
 
-from starlette.requests import Request
 from sqladmin.authentication import AuthenticationBackend
-from app.auth import get_user_from_token, authenticate_user, create_access_token
+from starlette.requests import Request
+
+from app.auth import authenticate_user, create_access_token, get_user_from_token
 
 
 class JWTAdminAuth(AuthenticationBackend):
