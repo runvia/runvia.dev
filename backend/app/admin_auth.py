@@ -1,9 +1,16 @@
 from datetime import timedelta
 
 from sqladmin.authentication import AuthenticationBackend
+from sqlmodel import Session
 from starlette.requests import Request
 
-from app.auth import authenticate_user, create_access_token, get_user_from_token
+from app.auth import (
+    authenticate_user,
+    can_access_admin,
+    create_access_token,
+    get_user_from_token,
+)
+from app.db import engine
 
 
 class JWTAdminAuth(AuthenticationBackend):
@@ -20,8 +27,9 @@ class JWTAdminAuth(AuthenticationBackend):
             return False
 
         # 2) now call your existing auth logic
-        user = authenticate_user(username, password)  # expects non-None strings
-        if not user:
+        with Session(engine) as session:
+            user = authenticate_user(session, username, password)
+        if not can_access_admin(user):
             return False
 
         token = create_access_token(
@@ -38,5 +46,6 @@ class JWTAdminAuth(AuthenticationBackend):
         token = request.session.get("token")
         if not token:
             return False
-        user = get_user_from_token(token)
-        return user is not None
+        with Session(engine) as session:
+            user = get_user_from_token(session, token)
+        return can_access_admin(user)
