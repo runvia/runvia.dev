@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from typing import Annotated
 
 import bcrypt
 from fastapi import Depends, HTTPException, status
@@ -7,7 +8,7 @@ from jose import JWTError, jwt
 from sqlmodel import Session, select
 
 from app.config import get_settings
-from app.db import engine
+from app.db import get_session
 from app.models.user import User
 
 # Secret & algoritm
@@ -42,15 +43,14 @@ def get_user_by_username(session: Session, username: str) -> User | None:
     return session.exec(select(User).where(User.username == username)).first()
 
 
-def authenticate_user(username: str, password: str) -> User | None:
+def authenticate_user(session: Session, username: str, password: str) -> User | None:
     """Function to authenticate the provided user"""
-    with Session(engine) as session:
-        user = get_user_by_username(session, username)
-        if not user or not verify_password(password, user.hashed_password):
-            return None
-        if not user.is_active:
-            return None
-        return user
+    user = get_user_by_username(session, username)
+    if not user or not verify_password(password, user.hashed_password):
+        return None
+    if not user.is_active:
+        return None
+    return user
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -63,7 +63,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     )
 
 
-def get_user_from_token(token: str) -> User | None:
+def get_user_from_token(session: Session, token: str) -> User | None:
     """Decode JWT, then load user from db"""
     try:
         payload = jwt.decode(
@@ -74,17 +74,25 @@ def get_user_from_token(token: str) -> User | None:
             return None
     except JWTError:
         return None
-    with Session(engine) as session:
-        return get_user_by_username(session, username)
+    return get_user_by_username(session, username)
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(
+    session: Annotated[Session, Depends(get_session)],
+    token: Annotated[str, Depends(oauth2_scheme)],
+):
     """async function that gets the current user"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
     )
-    user = get_user_from_token(token)
+    user = get_user_from_token(session, token)
     if not user:
         raise credentials_exception
     return user
+
+
+def can_access_admin(user: User | None) -> bool:
+    if not user:
+        return False
+    return user.is_superuser and user.is_active
