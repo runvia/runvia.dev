@@ -112,6 +112,7 @@ class SkillAdmin(ModelView, model=SkillItem):
         SkillItem.tools,
         SkillItem.description,
     ]
+    form_args = {"years_experience": {"validators": [validators.NumberRange(min=0)]}}
 
 
 class CVAdmin(ModelView, model=CV):

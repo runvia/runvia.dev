@@ -1,7 +1,7 @@
 from datetime import date
 from enum import Enum
 
-from sqlalchemy import Column
+from sqlalchemy import JSON, CheckConstraint, Column
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -72,15 +72,25 @@ class SkillItem(SQLModel, table=True):
     A single skill entry for my CV.
     """
 
+    __table_args__ = (
+        CheckConstraint(
+            "years_experience >= 0", name="ck_skillitem_years_experience_non_negative"
+        ),
+    )
+
     id: int | None = Field(default=None, primary_key=True)
     name: str  # e.g. "Python", "Docker", "React"
-    proficiency: str | None = None
+    proficiency: str
     category: SkillCategory | None = Field(default=None)
     years_experience: int | None = Field(default=None)
     last_used: date | None = None
     tools: list[str] = Field(
         default_factory=list,
-        sa_column=Column(JSONB, nullable=False, server_default="[]"),
+        sa_column=Column(
+            JSON().with_variant(JSONB(), "postgresql"),
+            nullable=False,
+            server_default="[]",
+        ),
     )
-    description: str | None = Field(default=None)
+    description: str | None = Field(default=None, max_length=300)
     cvs: list[CV] = Relationship(back_populates="skills", link_model=CVSkill)
