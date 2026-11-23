@@ -4,7 +4,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Build Status](https://github.com/runvia/runvia.dev/actions/workflows/ci.yml/badge.svg)](https://github.com/runvia/runvia.dev/actions)
-[![Deploy Status](https://github.com/runvia/runvia.dev/actions/workflows/deploy.yml/badge.svg)](https://github.com/runvia/runvia.dev/actions)
 
 **Live:** https://runvia.dev
 
