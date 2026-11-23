@@ -7,7 +7,12 @@ page alone, at 2am, without remembering anything? If a step needs knowledge that
 isn't written here, that's a bug in the runbook.
 
 Work through the sections in order. Steps 1–10 build the host, step 11 restores
-the data, step 12 proves it worked.
+the data, step 12 proves it worked. Step 13 sets up the nightly backup, and
+step 14 the automated deploys.
+
+The checkout lives in **`/srv/runvia.dev`** and is owned by the **`deploy`**
+user, who also runs the GitHub Actions runner. Commands are run as root unless
+they say otherwise.
 
 ---
 
@@ -142,33 +147,61 @@ else, the API writes records nobody queries and issuance never succeeds.
 > The old IP returns to DigitalOcean's pool and may be reassigned to someone
 > else. Repointing DNS isn't only about your site coming back.
 
-## 8. Clone the repository
+## 8. Create the deploy user and clone the repository
+
+The site is deployed by a dedicated **`deploy`** user, not root. It has no
+password (nobody logs in as it) and is in the `docker` group so it can run
+Compose without `sudo`:
 
 ```bash
-cd ~
-git clone https://github.com/runvia/runvia.dev.git
-cd runvia.dev
+adduser --disabled-password --gecos "" deploy
+usermod -aG docker deploy
 ```
 
-Deploy from **`main`**. On an existing host, update with:
+> Membership of the `docker` group is **effectively root**: anyone who can start
+> containers can mount the host's disk. That's acceptable for this user, but it's
+> why step 14's security settings are mandatory.
+
+Clone into `/srv` and hand it to `deploy`:
 
 ```bash
-cd ~/runvia.dev
-git pull
+git clone https://github.com/runvia/runvia.dev.git /srv/runvia.dev
+chown -R deploy:deploy /srv/runvia.dev
 ```
+
+The database lives in the Docker volume **`runviadev_pg_data`**. Its name
+comes from the Compose project name, which `docker-compose.yaml` pins with
+`name: runviadev`, so it doesn't depend on what the folder is called. On a host
+that already has data, check with `docker volume ls | grep pg_data` before
+starting: a different project name means a new, **empty** database volume, and
+the site looks as if its data is gone.
+
+Deploy from **`main`**. Normally the Deploy workflow updates the checkout (step
+14). To update it by hand, run git **as `deploy`**:
+
+```bash
+sudo -u deploy git -C /srv/runvia.dev pull --ff-only
+```
+
+Run as root, git refuses with `detected dubious ownership`, because root doesn't
+own the folder.
 
 > Make configuration changes **locally, commit, push, then pull here.** Editing
 > `docker-compose.yaml` directly on the droplet is how the previous server's
-> configuration came to exist nowhere else — and it died with the machine.
+> configuration came to exist nowhere else — and it died with the machine. It
+> also makes `git pull --ff-only`, and therefore every automated deploy, fail.
 
 ## 9. Create the `.env` file
 
 **Location matters.** It has to sit beside `docker-compose.yaml`:
 
 ```bash
-cd ~/runvia.dev
-nano .env
+nano /srv/runvia.dev/.env
+chown deploy:deploy /srv/runvia.dev/.env
+chmod 600 /srv/runvia.dev/.env
 ```
+
+`chmod 600` means only its owner, `deploy`, can read the secrets.
 
 All of these are required:
 
@@ -236,9 +269,11 @@ mkdir -p /letsencrypt
 Start everything:
 
 ```bash
-cd ~/runvia.dev
+cd /srv/runvia.dev
 docker compose --profile prod up -d --build
 ```
+
+All the `docker compose` commands in this runbook run from `/srv/runvia.dev`.
 
 The first build takes several minutes — it compiles the frontend and installs
 Python dependencies on the box. Follow certificate issuance:
@@ -299,11 +334,11 @@ Copy a dump to the droplet, then into the container:
 
 ```bash
 # from your machine
-scp runvia_YYYYMMDD_HHMM.dump root@DROPLET_IP:~/runvia.dev/
+scp runvia_YYYYMMDD_HHMM.dump root@DROPLET_IP:/root/
 
 # on the droplet
-cd ~/runvia.dev
-docker compose --profile prod cp runvia_YYYYMMDD_HHMM.dump postgres:/tmp/restore.dump
+cd /srv/runvia.dev
+docker compose --profile prod cp /root/runvia_YYYYMMDD_HHMM.dump postgres:/tmp/restore.dump
 ```
 
 Clear the migration marker so the dump's row can land without a primary-key
@@ -336,8 +371,10 @@ Three details, each required, each failing differently if omitted:
 - **`--single-transaction`** — the restore either completes or rolls back
   entirely. Note a rollback leaves `alembic_version` **empty**, because the
   `TRUNCATE` committed separately. If you abandon the restore there, put the row
-  back by hand or the backend will try to re-run every migration on next start:
-  `psql -U runvia -d runvia -c "INSERT INTO alembic_version VALUES ('5665d3759eee');"`
+  back by hand or the backend will try to re-run every migration on next start.
+  Find the current revision with
+  `docker compose --profile prod exec backend alembic heads`, then:
+  `psql -U runvia -d runvia -c "INSERT INTO alembic_version VALUES ('REVISION');"`
 
 ### Reset the sequences — not optional
 
@@ -480,7 +517,8 @@ account-level operation this token intentionally lacks. That is not a fault.
 ```
 
 Cron runs with a minimal `PATH` and no profile, so the script uses absolute
-paths for `docker` and `rclone` and `cd`s to the repo itself.
+paths for `docker` and `rclone` and `cd`s to the repo itself, which is
+**`/srv/runvia.dev`**. If the checkout ever moves, update the path in the script.
 
 **6. Test both paths.** Run it once by hand and confirm exit status 0 and a new
 object in R2. Then stop the postgres container, run it again, and confirm a
@@ -510,20 +548,157 @@ Then follow **step 11** — the same data-only procedure, including
   pings a URL on success, and you get an email when the ping stops arriving.
   Without one, a broken backup is invisible until you need it.
 
+## 14. Automated deploys
+
+A merge to `main` starts the **Deploy** workflow
+(`.github/workflows/deploy.yml`). It runs on a **self-hosted GitHub Actions
+runner** on the droplet, and only after you approve it.
+
+### How it works
+
+1. A push to `main` creates a Deploy run, which **waits** in the `production`
+   environment until a required reviewer approves it.
+2. The runner on the droplet, a service running as `deploy`, picks up the job.
+   It connects *out* to GitHub; GitHub never connects in, and no SSH key to the
+   server is stored in GitHub.
+3. In `/srv/runvia.dev`, the job:
+   - backs up the database to `/home/deploy/backups/pre-deploy-*.dump`
+     (the 10 newest are kept)
+   - runs `git pull --ff-only`
+   - runs `docker compose --profile prod up -d --build` (migrations run on
+     backend start)
+   - checks `/api/health` and `/` over HTTPS, with retries
+   - runs `docker image prune -f`
+
+To deploy: merge, wait for CI on `main` to go green, then **Actions → Deploy →
+Review deployments → Approve**. To redeploy without a new commit, use **Run
+workflow** on the Deploy workflow.
+
+### ⚠️ Security settings — set these before registering a runner
+
+The repository is **public**. Anyone can fork it and open a pull request, and a
+PR runs *its own* version of the workflow files, so it could target this runner,
+which has Docker access and therefore effectively root.
+
+- **Settings → Actions → General → fork pull request workflows from outside
+  collaborators:** **Require approval for all external contributors.** Never
+  approve a PR's workflows without reading its workflow changes first.
+- **Settings → Environments → `production`:**
+  - Required reviewers: yourself
+  - "Prevent self-review" **off**, or you can never approve your own deploys
+  - Deployment branches and tags: **`main` only**
+- `deploy.yml` triggers **only** on `push` to `main` and `workflow_dispatch`.
+  Never add `pull_request` to a workflow that uses `runs-on: self-hosted`.
+- The runner runs as `deploy`, **never as root**.
+
+### Install the runner
+
+**1.** In GitHub: **Settings → Actions → Runners → New self-hosted runner**,
+Linux, x64. Use the commands shown there; they carry the current version and
+checksum. The registration token in them is valid for **one hour** and works
+like a password.
+
+**2.** As `deploy`, download, verify and configure:
+
+```bash
+sudo -u deploy -i
+mkdir actions-runner && cd actions-runner
+# curl -o ...          (download, from GitHub's page)
+# echo "..." | shasum -a 256 -c     must print OK
+# tar xzf ...
+# ./config.sh --url https://github.com/runvia/runvia.dev --token ...
+exit
+```
+
+`config.sh` asks:
+- runner group: Enter
+- name: `runvia-droplet`
+- additional labels: **`droplet`**. The workflow requires both `self-hosted`
+  and `droplet`.
+- work folder: Enter
+
+**Don't run `./run.sh`.** It runs in the foreground and stops when the terminal
+closes. If `config.sh` complains about missing libraries, run
+`./bin/installdependencies.sh` as root in `/home/deploy/actions-runner`.
+
+**3.** As root, install and start it as a systemd service that runs as `deploy`:
+
+```bash
+cd /home/deploy/actions-runner
+./svc.sh install deploy
+./svc.sh start
+./svc.sh status        # active (running)
+```
+
+**4.** In GitHub, **Settings → Actions → Runners** shows `runvia-droplet` as
+**Idle**, with the labels `self-hosted`, `Linux`, `X64` and `droplet`.
+
+### After rebuilding the droplet
+
+The old runner stays registered in GitHub and shows **Offline**. Remove it
+under **Settings → Actions → Runners** before registering the new one with the
+same name. Then do steps 1–4 above. Until a runner is online, Deploy runs wait
+in the queue, and nothing is deployed.
+
+### When a deploy fails
+
+The job stops at the first failed step. Open the run in the Actions tab and
+check which step failed:
+
+| Step | Likely cause | What to do |
+|---|---|---|
+| Backup database | postgres container down | `docker compose --profile prod ps`; nothing has changed yet |
+| Update code | the checkout was edited on the server, so `--ff-only` refuses | `sudo -u deploy git -C /srv/runvia.dev status`; discard the local change, and make it in the repo instead |
+| Build and start | a build error, or the droplet is out of memory or disk | the build log; `free -h`; `df -h` |
+| Health check | the new version doesn't start, often a failed migration | `docker compose --profile prod logs backend` |
+
+**Rolling back:** revert the merge commit on GitHub (the PR's **Revert**
+button), merge the revert, and approve its deploy. Don't check out an old
+commit on the server: the next `git pull --ff-only` would then fail.
+
+If a migration damaged data, restore the newest `pre-deploy-*.dump` from
+`/home/deploy/backups` with the procedure in step 11.
+
+### Deploying by hand
+
+If GitHub or the runner is down, the manual route still works:
+
+```bash
+sudo -u deploy git -C /srv/runvia.dev pull --ff-only
+cd /srv/runvia.dev && docker compose --profile prod up -d --build
+```
+
+Take a backup first: `/root/backup-db.sh`.
+
+### Runner commands
+
+```bash
+cd /home/deploy/actions-runner
+./svc.sh status                                   # is it running?
+./svc.sh stop / ./svc.sh start                    # stop or start it
+journalctl -u 'actions.runner.*' -n 50            # its log
+```
+
 ---
 
 ## Quick reference
 
 ```bash
-cd ~/runvia.dev
+cd /srv/runvia.dev
 
-docker compose --profile prod up -d --build     # deploy / redeploy
+# Deploy: merge to main, then Actions → Deploy → Review deployments → Approve
+
+docker compose --profile prod up -d --build     # deploy / redeploy by hand
 docker compose --profile prod ps                # status
 docker compose --profile prod logs -f traefik   # certificate issues
 docker compose --profile prod logs -f backend   # application issues
 docker compose --profile prod down              # stop everything
 
+sudo -u deploy git pull --ff-only               # update the checkout by hand
+
 /root/backup-db.sh                              # back up now
 tail -20 /var/log/db-backup.log                 # did last night's backup work?
 rclone ls r2:runvia-backups/db                  # what backups exist
+ls -lt /home/deploy/backups                     # pre-deploy backups
+systemctl status 'actions.runner.*'             # is the runner running?
 ```
