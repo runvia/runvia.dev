@@ -6,7 +6,6 @@ from fastapi import APIRouter, FastAPI
 
 # SQLAdmin imports
 from sqladmin import Admin, ModelView
-from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from wtforms import PasswordField, StringField, validators
 
@@ -36,16 +35,7 @@ app.add_middleware(
     SessionMiddleware, secret_key=get_settings().session_secret_key.get_secret_value()
 )
 
-# 2) CORS (for your React app on localhost:3000)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://runvia.dev"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# 3) Mount the SQLAdmin UI *first*, on /admin
+# 2) Mount the SQLAdmin UI *first*, on /admin
 admin = Admin(
     app=app,
     engine=engine,
@@ -143,7 +133,7 @@ admin.add_view(SkillAdmin)
 admin.add_view(CVAdmin)
 admin.add_view(UserAdmin)
 
-# 4) Now group your JSON API under /api
+# 3) Now group your JSON API under /api
 api_router = APIRouter()
 
 # public endpoints
