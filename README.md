@@ -1,164 +1,163 @@
 # runvia.dev
 
-> A personal portfolio and CV site showcasing my projects and skills
+> My personal portfolio and CV site, built from scratch as both a showcase and a learning project.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)  
-[![Build Status](https://github.com/runvia/runvia.dev/actions/workflows/ci.yml/badge.svg)](https://github.com/runvia/runvia.dev/actions)  
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Build Status](https://github.com/runvia/runvia.dev/actions/workflows/ci.yml/badge.svg)](https://github.com/runvia/runvia.dev/actions)
 [![Deploy Status](https://github.com/runvia/runvia.dev/actions/workflows/deploy.yml/badge.svg)](https://github.com/runvia/runvia.dev/actions)
 
-
----
-
-## Table of Contents
-
-1. [About](#about)
-2. [Demo](#demo)
-3. [Tech Stack](#tech-stack)  
-4. [Getting Started](#getting-started)  
-   - [Prerequisites](#prerequisites)
-   - [Installation](#installation)
-   - [Running Locally](#running-locally)
-5. [Project Structure](#project-structure)  
-6. [Usage](#usage)  
-7. [Contributing](#contributing)  
-8. [Changelog](#changelog)  
-9. [License](#license)  
-10. [Contact](#contact)
-
+**Live:** https://runvia.dev
 
 ---
 
 ## About
 
-_This repo contains the source code for my personal website, runvia.dev—a React frontend with a FastAPI backend, containerized with Docker & Traefik. You’ll find my CV, project showcases, and a blog to share what I’m learning._
+This repository contains everything behind [runvia.dev](https://runvia.dev): a React frontend, a FastAPI backend with a PostgreSQL database, and the Docker and Traefik setup that runs it on a DigitalOcean droplet.
 
----
+The site shows my CV and the projects I've worked on. Small browser games are planned next (see [`future_projects.md`](future_projects.md)).
 
-## Demo
+It's also deliberately a learning project. I'm using it to get hands-on with a modern web stack end to end: frontend, API, database, infrastructure, CI and operations.
 
-Live: https://runvia.dev  
+## Tech stack
 
-![Home page screenshot](./assets/screenshots.png)
+| Area | Technology |
+|---|---|
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 3, React Router 7, served by nginx |
+| Backend | FastAPI (Python 3.13), SQLModel, Alembic migrations, PostgreSQL 16 |
+| Content editing | SQLAdmin, restricted to active superusers |
+| Infrastructure | Docker Compose with `dev` and `prod` profiles, Traefik v3 with Let's Encrypt (DNS-01) |
+| Hosting | DigitalOcean droplet, nightly database backups to Cloudflare R2 |
+| Quality | GitHub Actions (ESLint, TypeScript build, ruff, pytest), pre-commit hooks |
 
----
+## Architecture
 
-## Tech Stack
+```mermaid
+flowchart LR
+    browser([Browser]) -->|HTTPS| traefik[Traefik]
+    traefik -->|"/"| nginx["nginx<br/>(React build)"]
+    traefik -->|"/api, /admin"| api["FastAPI<br/>+ SQLAdmin"]
+    api --> db[(PostgreSQL)]
+```
 
-- **Frontend**: React (CRA, hooks)  
-- **Backend**: FastAPI, Uvicorn  
-- **Containerization**: Docker, Docker Compose + Traefik  
-- **CI/CD**: GitHub Actions
-- **Hosting**: DigitalOcean (pick one)
+Traefik is the only public entry point. It terminates TLS, redirects HTTP to HTTPS, adds security headers, and routes each request either to nginx, which serves the built React app, or to FastAPI, which serves the JSON API and the admin interface.
 
----
+The [`architecture/`](architecture) folder documents the design of the site following the TOGAF Architecture Development Method. There's one folder per phase, from [`01_Preliminary`](architecture/01_Preliminary) to [`08_ChangeManagement`](architecture/08_ChangeManagement), with the diagrams in [`architecture/diagrams`](architecture/diagrams).
 
-## Getting Started
+## Running locally
 
 ### Prerequisites
 
-- Node.js ≥14.x & npm  
-- Python ≥3.9 & pip  
-- Docker & Docker Compose  
-- VS Code (with ESLint, Prettier, Python, Docker extensions)
+- Docker with Docker Compose
+- To work on the code outside the containers: Node.js 22, Python 3.13 and [uv](https://docs.astral.sh/uv/)
 
-### Installation
+### 1. Create a `.env` file
 
-1. **Clone** the repo  
-```bash
-git clone https://github.com/runvia/runvia.dev.git
-cd runvia.dev
+Create `.env` in the repository root, next to `docker-compose.yaml`. It needs these variables:
+
 ```
-2. **Install frontend deps**
-```bash
-cd frontend
-npm install
-```
-3. **Install backend deps**
-```bash
-cd ../backend
-pip install -r requirements.txt
+POSTGRES_DB=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+DATABASE_URL=
+ADMIN_USERNAME=
+ADMIN_PASSWORD=
+SECRET_KEY=
+SESSION_SECRET_KEY=
+DATABASE_ECHO=false
 ```
 
-### Running Locally
+- `DATABASE_URL` points at the Compose service, so its host is `postgres`: `postgresql://USER:PASSWORD@postgres:5432/DB`.
+- `SECRET_KEY` and `SESSION_SECRET_KEY` must each be at least 32 characters. Generate them with `openssl rand -base64 32`.
+- `ADMIN_USERNAME` and `ADMIN_PASSWORD` create the first admin user on startup.
 
-In the project root
+[Section 9 of the runbook](docs/runbook.md#9-create-the-env-file) explains each variable in detail, including the production-only `DO_AUTH_TOKEN`.
+
+### 2. Start the stack
+
 ```bash
-docker-compose up --build
+docker compose --profile dev up --build
 ```
 
- - Frontend --> http://localhost
- - API --> http://api.localhost/docs 
+Database migrations run automatically when the backend starts.
 
----
+| URL | What |
+|---|---|
+| http://localhost | The site |
+| http://localhost/api/docs | Interactive API documentation |
+| http://localhost/admin/ | SQLAdmin, to edit the CV content |
+| http://localhost:8080 | Traefik dashboard |
 
-## Project Structure
+PostgreSQL is also reachable from the host on port `55432`.
+
+### 3. Development tools
+
+Install the dependencies locally, so your editor can see them and you can run the checks:
 
 ```bash
+cd backend && uv sync
+```
+
+```bash
+cd frontend && npm ci
+```
+
+`npm ci` installs exactly what `package-lock.json` specifies. `npm install` can rewrite the lockfile, so only use it when you mean to change dependencies.
+
+Then install the git hooks, which run ruff and pytest before every commit:
+
+```bash
+uv tool install pre-commit
+pre-commit install
+```
+
+### Tests and linting
+
+```bash
+uv run --directory backend pytest
+```
+
+```bash
+cd frontend && npm run lint && npm run build
+```
+
+The backend tests use an in-memory SQLite database, so they don't need Docker or a running PostgreSQL. CI runs the same checks on every pull request.
+
+## Project structure
+
+```
 runvia.dev/
-├─ frontend/        # React app (CRA)
+├─ frontend/              React app
 │  ├─ src/
-│  │  ├─ components/
-│  │  ├─ pages/
-│  │  └─ assets/
+│  │  ├─ pages/           one component per route
+│  │  ├─ components/      shared layout and route guards
+│  │  ├─ api/             API client
+│  │  └─ context/         authentication state
+│  ├─ nginx/              nginx config for the production image
 │  └─ Dockerfile
-├─ backend/         # FastAPI
+├─ backend/               FastAPI app
 │  ├─ app/
-│  │  ├─ routers/
-│  │  └─ models/
+│  │  ├─ routers/         API endpoints
+│  │  ├─ models/          database tables (SQLModel)
+│  │  └─ schemas/         API response shapes
+│  ├─ alembic/            database migrations
+│  ├─ tests/
 │  └─ Dockerfile
-├─ docker-compose.yml
-├─ .github/         # workflows, issue/PR templates
-├─ .gitignore
-├─ README.md
-└─ LICENSE
+├─ architecture/          TOGAF architecture documentation
+├─ docs/
+│  └─ runbook.md          deployment and operations runbook
+├─ .github/workflows/     CI
+└─ docker-compose.yaml    dev and prod stacks
 ```
 
----
+## Deployment
 
-## Usage
-
-Explain how to:
-
- - Add a new page in react
- - Expose a new endpoint in FastAPI
- - Write documentation in /docs (if you have any)
- - Update the Docker Compose labels for Traefik routing
-
- ---
-
- ## Contributing
-
- 1. Fork the repo
- 2. Create a branch: feature/my-new-app
- 3. Commit your changes with a clear message
- 4. Open a PR against develop
- 5. Ensure linting passes & docs are updated
-
----
-
-## Changelog
-
-### [unreleased]
-- ✨ Add Blog page skeleton
-- 🐛 Fix header nav link styling
-### Added
-- Architecture model published across 5 pages:
-  Stakeholders, Capabilities, Use Case Diagram,
-  App & Data Architecture, Solutions Overview.
-
-### Removed
-- draw.io temp file: .$runvia-architecture.drawio.dtmp
-
-### [v0.1.0] – 2025-04-23
-- Initial scaffold: React + FastAPI + Docker + Traefik
-
----
+The site runs on a single DigitalOcean droplet using the `prod` Compose profile. The [runbook](docs/runbook.md) covers everything from creating the droplet to restoring and backing up the database.
 
 ## License
 
-This project is licensed under the MIT License
+This project is licensed under the [MIT License](LICENSE).
 
-## Contact 
-- Runvia
+## Contact
+
 - Email: [contact@runvia.dev](mailto:contact@runvia.dev)
-- Github: Runvia
+- GitHub: [runvia](https://github.com/runvia)
