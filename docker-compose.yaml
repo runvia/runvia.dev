@@ -1,3 +1,5 @@
+name: runviadev
+
 x-frontend-base: &frontend_base
   build: ./frontend
   expose:

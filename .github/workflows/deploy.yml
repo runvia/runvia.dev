@@ -1,0 +1,42 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, droplet]
+    environment: production
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: "/srv/runvia.dev"
+    steps:
+      - name: Backup database
+        run: |
+          mkdir -p /home/deploy/backups
+          FILE=/home/deploy/backups/pre-deploy-$(date +%Y%m%d-%H%M%S).dump
+          docker compose --profile prod exec -T postgres pg_dump -U runvia -Fc runvia > "$FILE.tmp"
+          mv "$FILE.tmp" "$FILE"
+          ls -1t /home/deploy/backups/pre-deploy-*.dump | tail -n +11 | xargs -r rm --
+      - name: Update code
+        run: |
+          git pull --ff-only
+          git log -1 --oneline
+      - name: Build and start
+        run: docker compose --profile prod up -d --build
+      - name: Health check
+        run: |
+          curl https://runvia.dev/api/health --fail --silent --show-error --retry 10 --retry-delay 3 --retry-all-errors
+          curl https://runvia.dev/ -o /dev/null --fail --silent --show-error --retry 10 --retry-delay 3 --retry-all-errors
+      - name: Clean up old images
+        run: docker image prune -f
