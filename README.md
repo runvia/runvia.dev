@@ -150,7 +150,9 @@ runvia.dev/
 
 ## Deployment
 
-The site runs on a single DigitalOcean droplet using the `prod` Compose profile. The [runbook](docs/runbook.md) covers everything from creating the droplet to restoring and backing up the database.
+The site runs on a single DigitalOcean droplet using the `prod` Compose profile. Merges to `main` are deployed by a self-hosted GitHub Actions runner on the droplet, after manual approval. The runner pulls jobs from GitHub, so GitHub never needs access to the server.
+
+The [runbook](docs/runbook.md) covers everything from creating the droplet to automated deploys, restores and backups.
 
 ## License
 
